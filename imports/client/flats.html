@@ -1,0 +1,58 @@
+<template name="flats">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Image</th>
+        <th>Price</th>
+        <th>Rate</th>
+        <th>Street</th>
+        <th>Title, description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each flats}}
+        {{> flatRow}}
+      {{/each}}
+    </tbody>
+  </table>
+
+  <button class="hide-all-cancelled">Hide cancelled</button>
+</template>
+
+<template name="flatRow">
+  <tr class="flat-row {{#if isFlatCancelled this}}cancelled{{/if}}">
+    <td class="col-date">{{date createdAt}}</td>
+    <td class="col-image">
+      <a href="{{url}}" target="_blank">
+        {{#if imageUrls}}
+          <img src="{{imageUrl imageUrls}}">
+        {{/if}}
+      </a>
+    </td>
+    <td class="col-price">{{price}}</td>
+    <td class="col-rate">
+      <button class="btn-rate rate-flat-good {{#if isFlatGood this}}selected{{/if}}">
+        <i class="fa fa-fw fa-heart"></i>
+      </button>
+      <button class="btn-rate rate-flat-could {{#if isFlatCould this}}selected{{/if}}">
+        <i class="fa fa-fw fa-thumbs-o-up"></i>
+      </button>
+      <button class="btn-rate rate-flat-no {{#if isFlatCancelled this}}selected{{/if}}">
+        <i class="fa fa-fw {{#if isFlatCancelled this}}fa-times{{else}}fa-trash{{/if}}"></i>
+      </button>
+    </td>
+    <td class="col-street">
+      {{#if street}}
+        <a href="{{mapUrl street}}" target="_blank">{{street}}</a>
+      {{else}}
+        -
+      {{/if}}
+    </td>
+    <td class="col-descr">
+      <a href="{{url}}" target="_blank"><strong>{{title}}</strong></a>
+      <p>{{descriptionShort}}</p>
+    </td>
+  </tr>
+</template>
+

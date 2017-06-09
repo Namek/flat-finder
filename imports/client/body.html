@@ -1,0 +1,24 @@
+<head>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{secret "GOOGLE_API_KEY"}}&libraries=places"></script>
+</head>
+
+<body>
+  <div>
+    <button class="toggle-settings">
+      {{#if settingsOpen}}
+        Close Settings
+      {{else}}
+        Open Settings
+      {{/if}}
+    </button>
+  </div>
+  {{#if settingsOpen}}
+    Settings open!
+  {{else}}
+    <hr>
+    
+    {{> map}}
+
+    {{> flats}}
+  {{/if}}
+</body>

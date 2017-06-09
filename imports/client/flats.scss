@@ -1,0 +1,126 @@
+table {
+  &, th, td, tr {
+    border: 1px solid #bbb;
+  }
+
+  th {
+    text-align: left;
+    padding: 0.5rem;
+  }
+  td {
+    padding: 0.1rem;
+  }
+}
+
+.flat-row {
+  &:nth-child(even) {
+    background: #ffffff;
+  }
+
+  &:nth-child(odd) {
+    background: #f9f9f9;
+  }
+
+  img {
+    max-height: 100px;
+    width: 150px;
+  }
+
+  a {
+    text-decoration: none;
+    color: #333;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:active {
+      color: red;
+    }
+
+    &:visited {
+      color: #777;
+    }
+  }
+
+
+  &:hover {
+    background: #efefef;
+  }
+
+  &.cancelled {
+    opacity: 0.15;
+  }
+}
+
+.col-image {
+  padding: 0;
+}
+
+.col-price {
+  width: 75px;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.col-street {
+  text-align: center;
+}
+
+.col-descr {
+  padding: 1rem;
+}
+
+.col-rate {
+  text-align: center;
+}
+
+.col-date {
+  text-align: center;
+  padding: 0 0.5rem;
+}
+
+.btn-rate {
+  border: 1px solid #ccc;
+  margin: 2px;
+  padding: 5px 7px;
+  text-align: center;
+  background: #fafafa;
+  border-radius: 3px;
+  cursor: pointer;
+
+  .fa-heart {
+    color: red;
+  }
+
+  &.selected {
+    border: 1px solid #ccc;
+  }
+
+  &.rate-flat-good {
+    &.selected, &:hover {
+      background-color: red;
+      .fa {
+        color: white;
+      }
+    }
+  }
+
+  &.rate-flat-could {
+    &.selected, &:hover {
+      background-color: steelblue;
+      .fa {
+        color: white;
+      }
+    }
+  }
+
+  &.rate-flat-no {
+    &.selected, &:hover {
+      background-color: grey;
+      .fa {
+        color: red;
+      }
+    }
+  }
+}
