@@ -2,11 +2,39 @@ const cheerio = require('cheerio')
 import { memoizedHttpGet } from '../utils.js'
 import { Flats } from '../../imports/api/index.js'
 
-export default function scrape(site, opts) {
+/**
+ * Autotomatically scrape an offer list or a single offer.
+ * @param {String} siteUrl
+ * @param {Object} opts
+ */
+export default function scrapeSomething(siteUrl, opts) {
+  let parts = siteUrl.split('/')
+  let lastPart = parts[parts.length-1]
+  let isOfferSite = !Number.isNaN(parseInt(lastPart))
+
+  if (isOfferSite) {
+    return new Promise((resolve, reject) => {
+      try {
+        let siteContent = memoizedHttpGet(siteUrl)
+        scrapeSingleOfferSite(siteUrl, siteContent)
+        resolve()
+      } catch (err) {
+        console.error(err)
+        reject(err)
+      }
+    })
+  }
+  else {
+    return scrapeOfferListSite(siteUrl, opts)
+  }
+}
+
+
+function scrapeOfferListSite(siteUrl, opts) {
   const {shouldRescanSameFlats, furthestDaysBackCount} = opts
 
   return new Promise((resolve, reject) => {
-    let urls = gatherUrlsFromListPage(site.url, opts)
+    let urls = gatherUrlsFromListPage(siteUrl, opts)
 
     if (shouldRescanSameFlats) {
       let scannedUrls = Flats.find({ siteType: 'gumtree' })
@@ -40,7 +68,8 @@ export default function scrape(site, opts) {
       .filter(({data}) => data === null)
       .map(({url}) => url)
 
-    let scrappedData = contents.map(scrapeSite)
+    let scrappedData = contents
+      .map(({url, data}) => scrapeSingleOfferSite(url, data))
 
     for (let newDoc of scrappedData) {
       let doc = Flats.findOne({ url: newDoc.url })
@@ -79,7 +108,7 @@ function gatherUrlsFromListPage(siteUrl, {shouldRescanSameFlats, furthestDaysBac
   return urls
 }
 
-function scrapeSite({url, data}) {
+function scrapeSingleOfferSite(url, data) {
   $ = new cheerio.load(data)
   let description = $('div.description').text()
 

@@ -5,15 +5,15 @@ import { Websites, Flats, Memo } from '../imports/api/index.js'
 
 const CRAWL_DELAY = 600 //seconds
 
-const SHOULD_RESCAN_SAME_FLATS = true
+const SHOULD_RESCAN_SAME_FLATS = false
 const FURTHEST_DAYS_BACK_COUNT = 30
 
 Meteor.startup(() => {
   function next() {
-    Meteor.setTimeout(crawl, CRAWL_DELAY*1000)
+    Meteor.setTimeout(crawlEverything, CRAWL_DELAY*1000)
   }
 
-  crawl()
+  crawlEverything()
     .then(() => {
       next()
     }, err => {
@@ -21,6 +21,47 @@ Meteor.startup(() => {
       next()
     })
 });
+
+Meteor.methods({
+  /**
+   * Scrape an offer website. It may be a rescan or a new scan.
+   * @param {String} url 
+   */
+  'crawler.scrape-website'(url) {
+    console.log(url)
+    let siteType = determineWebsiteType(url)
+
+    if (!siteType)
+      return new Error("Unkown site type for URL: " + url)
+
+    let scrapeFn = getOfferScrapeFunction(siteType)
+    callScrapeFunctionWithParams(scrapeFn, url)
+  }
+})
+
+function determineWebsiteType(url) {
+  if (url.indexOf("gumtree") > 0)
+    return 'gumtree'
+
+  return null
+}
+
+function getOfferScrapeFunction(siteType) {
+  let scrapeFn = null
+  if (siteType == 'gumtree') {
+    import scrape from './crawlers/gumtree.js'
+    scrapeFn = scrape
+  }
+
+  return scrapeFn
+}
+
+function callScrapeFunctionWithParams(scrapeFn, siteUrl) {
+  return scrapeFn(siteUrl, {
+    shouldRescanSameFlats: SHOULD_RESCAN_SAME_FLATS,
+    furthestDaysBackCount: FURTHEST_DAYS_BACK_COUNT
+  })
+}
 
 String.prototype.trimChars = function(chars) {
   var l = 0;
@@ -30,26 +71,18 @@ String.prototype.trimChars = function(chars) {
   return this.substring(l, r+1);
 };
 
-function crawl() {
+function crawlEverything() {
   return Promise.all(
     Websites.find({}).fetch().map(site =>
       new Promise((resolve, reject) => {
         try {
-          let scrapeFn = null
-
-          if (site.type == 'gumtree') {
-            import scrape from './crawlers/gumtree.js'
-            scrapeFn = scrape
-          }
+          let scrapeFn = getOfferScrapeFunction(site.type)
           
           if (!scrapeFn) {
             throw new Error(`Unknown site type: ${site.type}.`)
           }
 
-          scrapeFn(site, {
-            shouldRescanSameFlats: SHOULD_RESCAN_SAME_FLATS,
-            furthestDaysBackCount: FURTHEST_DAYS_BACK_COUNT
-          })
+          callScrapeFunctionWithParams(scrapeFn, site.url)
             .then(
               () => resolve(),
               err => { console.error(err), resolve() }

@@ -39,6 +39,10 @@ Template.flats.events({
   },
   'click .hide-all-cancelled'() {
     Meteor.call('flats.hide-all-cancelled')
+  },
+  'click .btn-rescan-website'() {
+    console.log(this.url)
+    Meteor.call('crawler.scrape-website', this.url)
   }
 })
 
