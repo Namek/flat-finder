@@ -2,10 +2,61 @@ const cheerio = require('cheerio')
 import { memoizedHttpGet } from '../utils.js'
 import { Flats } from '../../imports/api/index.js'
 
-const SHOULD_RESCAN_SAME_FLATS = true
+export default function scrape(site, opts) {
+  const {shouldRescanSameFlats, furthestDaysBackCount} = opts
 
+  return new Promise((resolve, reject) => {
+    let urls = gatherUrlsFromListPage(site.url, opts)
 
-export default function scrapeGumtree($) {
+    if (shouldRescanSameFlats) {
+      let scannedUrls = Flats.find({ siteType: 'gumtree' })
+        .map(flat => flat.url)
+
+      for (let url of scannedUrls) {
+        if (urls.indexOf(url) < 0) {
+          urls.push(url)
+        }
+      }
+    }
+
+    console.log(`Scanning ${urls.length} sites...`)
+    let sites = urls.map(url => {
+      console.log("Open: " + url)
+
+      let ret = { url, data: null }
+      try {
+        ret.data = memoizedHttpGet(url)
+      } catch (err) {
+        console.error("URL failed: " + url, err)
+      }
+
+      return ret
+    })
+
+    let contents = sites
+      .filter(({data}) => data !== null)
+
+    let urlsToRetry = sites
+      .filter(({data}) => data === null)
+      .map(({url}) => url)
+
+    let scrappedData = contents.map(scrapeSite)
+
+    for (let newDoc of scrappedData) {
+      let doc = Flats.findOne({ url: newDoc.url })
+      if (!doc) {
+        Flats.insert(newDoc)
+      }
+      else {
+        Flats.update({_id: doc._id}, {$set: newDoc})
+      }
+    }
+  })
+}
+
+function gatherUrlsFromListPage(siteUrl, {shouldRescanSameFlats, furthestDaysBackCount}) {
+  console.log(`Scraping: ${siteUrl}`)
+  const $ = new cheerio.load(Meteor.http.get(siteUrl).content)
   let offersEls = $('.result')
 
   let urls = []
@@ -19,44 +70,13 @@ export default function scrapeGumtree($) {
 
     if (url.indexOf("javascript:") < 0) {
       let doc = Flats.findOne({ url })
-      if (!doc || SHOULD_RESCAN_SAME_FLATS) {
+      if (!doc || shouldRescanSameFlats) {
         urls.push(url)
       }
     }
   })
 
-  console.log(`Scanning ${urls.length} sites...`)
-  let sites = urls.map(url => {
-    console.log("Open: " + url)
-
-    let ret = { url, data: null }
-    try {
-      ret.data = memoizedHttpGet(url)
-    } catch (err) {
-      console.error("URL failed: " + url, err)
-    }
-
-    return ret
-  })
-
-  let contents = sites
-    .filter(({data}) => data !== null)
-
-  let urlsToRetry = sites
-    .filter(({data}) => data === null)
-    .map(({url}) => url)
-
-  let scrappedData = contents.map(scrapeSite)
-
-  for (let newDoc of scrappedData) {
-    let doc = Flats.findOne({ url: newDoc.url })
-    if (!doc) {
-      Flats.insert(newDoc)
-    }
-    else {
-      Flats.update({_id: doc._id}, {$set: newDoc})
-    }
-  } 
+  return urls
 }
 
 function scrapeSite({url, data}) {
@@ -127,6 +147,7 @@ function scrapeSite({url, data}) {
     : null
 
   let info = {
+    siteType: 'gumtree',
     createdAt,
     url,
     title: $('.myAdTitle').text(),

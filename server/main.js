@@ -4,11 +4,22 @@ const cheerio = require('cheerio')
 import { Websites, Flats, Memo } from '../imports/api/index.js'
 
 const CRAWL_DELAY = 600 //seconds
+
+const SHOULD_RESCAN_SAME_FLATS = true
 const FURTHEST_DAYS_BACK_COUNT = 30
 
 Meteor.startup(() => {
+  function next() {
+    Meteor.setTimeout(crawl, CRAWL_DELAY*1000)
+  }
+
   crawl()
-  Meteor.setTimeout(crawl, CRAWL_DELAY*1000)
+    .then(() => {
+      next()
+    }, err => {
+      console.error(err)
+      next()
+    })
 });
 
 String.prototype.trimChars = function(chars) {
@@ -20,16 +31,36 @@ String.prototype.trimChars = function(chars) {
 };
 
 function crawl() {
-  Websites.find({}).fetch().forEach(site => {
-    let dom = new cheerio.load(Meteor.http.get(site.url).content)
+  return Promise.all(
+    Websites.find({}).fetch().map(site =>
+      new Promise((resolve, reject) => {
+        try {
+          let scrapeFn = null
 
-    if (site.type == 'gumtree') {
-      import scrapeGumtree from './crawlers/gumtree.js'
-      scrapeGumtree(dom)
-    }
-    else {
-      throw new Error(`Unknown site type: ${site.type}.`)
-    }
-  })
+          if (site.type == 'gumtree') {
+            import scrape from './crawlers/gumtree.js'
+            scrapeFn = scrape
+          }
+          
+          if (!scrapeFn) {
+            throw new Error(`Unknown site type: ${site.type}.`)
+          }
+
+          scrapeFn(site, {
+            shouldRescanSameFlats: SHOULD_RESCAN_SAME_FLATS,
+            furthestDaysBackCount: FURTHEST_DAYS_BACK_COUNT
+          })
+            .then(
+              () => resolve(),
+              err => { console.error(err), resolve() }
+            )
+        }
+        catch (err) {
+          console.error(err)
+          reject(err)
+        }
+      })
+    )
+  )
 }
 
