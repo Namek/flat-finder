@@ -43,6 +43,9 @@ Template.flats.events({
   'click .btn-rescan-website'() {
     console.log(this.url)
     Meteor.call('crawler.scrape-website', this.url)
+  },
+  'click .btn-show-on-map'() {
+    AppServices.Map.textSearch(`${this.location}, ${this.street}`)
   }
 })
 

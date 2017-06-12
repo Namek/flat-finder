@@ -22,6 +22,7 @@ function initMap() {
     zoom: 15
   })
   let infoWindow = new google.maps.InfoWindow()
+  let geocoder = new google.maps.Geocoder()
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
@@ -36,4 +37,17 @@ function initMap() {
       map.setCenter(center)
     }, () => { /* ignore errors */ })
   }
+
+
+  AppServices.registerService('Map', {
+    textSearch(text) {
+      geocoder.geocode({address: text}, (results, status) => {
+        let pos = results[0].geometry.location
+        map.setCenter(pos)
+        infoWindow.setPosition(pos)
+        infoWindow.setContent(text)
+        infoWindow.open(map)
+      })
+    }
+  })
 }

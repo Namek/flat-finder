@@ -175,6 +175,10 @@ function scrapeSingleOfferSite(url, data) {
     ? parseInt(priceText.trim().replace(/\s/g,''), 10) || null
     : null
 
+  let locationSourceText = $('#div-gpt-oop > div.containment > div.page.extra > div.breadcrumbs > h1 > span').text()
+    .trim().split('|')
+  let location = locationSourceText[locationSourceText.length-1].trim()
+
   let info = {
     siteType: 'gumtree',
     createdAt,
@@ -186,7 +190,8 @@ function scrapeSingleOfferSite(url, data) {
     detailsHtml: $('.vip-details').toString(),
     imageUrls,
     fullImageUrls,
-    street
+    street,
+    location
   }
 
   return info

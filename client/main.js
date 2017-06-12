@@ -2,7 +2,6 @@
 import '../imports/client/body.js';
 
 
-
 /*
 Template.hello.onCreated(function helloOnCreated() {
   // counter starts at 0
