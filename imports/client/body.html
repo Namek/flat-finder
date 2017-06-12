@@ -1,7 +1,3 @@
-<head>
-  <script src="https://maps.googleapis.com/maps/api/js?key={{secret "GOOGLE_API_KEY"}}&libraries=places"></script>
-</head>
-
 <body>
   <div>
     <button class="toggle-settings">
@@ -17,7 +13,9 @@
   {{else}}
     <hr>
     
-    {{> map}}
+    {{#with secret "GOOGLE_API_KEY"}}
+      {{> map key=this}}
+    {{/with}}
 
     {{> flats}}
   {{/if}}

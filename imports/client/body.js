@@ -4,7 +4,7 @@ import { ReactiveVar } from 'meteor/reactive-var'
 
 import './flats.js'
 import './body.html'
-import './map.html'
+import './map.js'
 
 import config from '../config.json'
 
