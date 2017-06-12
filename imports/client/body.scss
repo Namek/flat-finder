@@ -1,0 +1,23 @@
+body {
+  margin: 4px;
+}
+
+.flats-with-map-container {
+  &.map-on-right {
+    display: flex;
+    flex-direction: row;
+    
+    height: calc(100vh - 50px);
+
+    .flats-container {
+      order: -1;
+
+      height: 100%;
+      overflow: auto;
+    }
+
+    #map {
+      height: 100%
+    }
+  }
+}

@@ -46,6 +46,7 @@ Template.flats.events({
   },
   'click .btn-show-on-map'() {
     AppServices.Map.textSearch(`${this.location}, ${this.street}`)
+    AppServices.Map.scrollToMap()
   }
 })
 

@@ -9,14 +9,23 @@
     </button>
   </div>
   {{#if settingsOpen}}
-    Settings open!
+    <h1>Settings</h1>
+
+    <label>
+      <input type="checkbox" class="checkbox-map-on-right" checked="{{isMapOnRight}}">
+      Map on right? Otherwise on top
+    </label>
   {{else}}
     <hr>
     
-    {{#with secret "GOOGLE_API_KEY"}}
-      {{> map key=this}}
-    {{/with}}
+    <div class="flats-with-map-container {{#if isMapOnRight}}map-on-right{{/if}}">
+      {{#with secret "GOOGLE_API_KEY"}}
+        {{> map key=this}}
+      {{/with}}
 
-    {{> flats}}
+      <div class="flats-container">
+        {{> flats}}
+      </div>
+    </div>
   {{/if}}
 </body>

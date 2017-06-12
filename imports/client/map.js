@@ -17,7 +17,8 @@ Template.map.onRendered(function() {
 
 
 function initMap() {
-  let map = new google.maps.Map(document.getElementById('map'), {
+  let mapEl = document.getElementById('map')
+  let map = new google.maps.Map(mapEl, {
     center: {lat: -34.397, lng: 150.644},
     zoom: 15
   })
@@ -48,6 +49,9 @@ function initMap() {
         infoWindow.setContent(text)
         infoWindow.open(map)
       })
+    },
+    scrollToMap() {
+      mapEl.scrollIntoView(true)
     }
   })
 }
