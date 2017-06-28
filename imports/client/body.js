@@ -1,7 +1,9 @@
 import { Template } from 'meteor/templating'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Session } from 'meteor/session'
-// import { ReactiveDict } from 'meteor/reactive-dict'
+import * as RLocalStorage from 'meteor/simply:reactive-local-storage'
+
+import C from './consts.js'
 
 import './flats.js'
 import './body.html'
@@ -27,11 +29,16 @@ Template.body.helpers({
     return instance.state.get('settingsOpen')
   },
   isMapOnRight() {
-    let settings = Session.get('settings')
-    if (!settings)
-      return false
-
-    return !!settings.isMapOnRight
+    return RLocalStorage.getItem(C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY)
+  },
+  isShowingHeartedFlatsOnMap() {
+    return RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY)
+  },
+  isShowingLikedFlatsOnMap() {
+    return RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_LIKES_KEY)
+  },
+  isShowingCustomMarkersOnMap() {
+    return RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY)
   }
 })
 
@@ -40,12 +47,27 @@ Template.body.events({
     instance.state.set('settingsOpen', !instance.state.get('settingsOpen'))
   },
   'change .checkbox-map-on-right'(evt, instance) {
-    let settings = Session.get('settings')
-    if (!settings) {
-      settings = {}
-    }
-    
-    settings.isMapOnRight = evt.currentTarget.checked
-    Session.set('settings', settings)
+    RLocalStorage.setItem(
+      C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY,
+      !RLocalStorage.getItem(C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY)
+    )
+  },
+  'click .btn-map-toggle-hearts'() {
+    RLocalStorage.setItem(
+      C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY,
+      !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY)
+    )
+  },
+  'click .btn-map-toggle-likes'() {
+    RLocalStorage.setItem(
+      C.LOCAL_STORAGE_TOGGLE_LIKES_KEY,
+      !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_LIKES_KEY)
+    )
+  },
+  'click .btn-map-toggle-custom-markers'() {
+    RLocalStorage.setItem(
+      C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY,
+      !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY)
+    )
   }
 })

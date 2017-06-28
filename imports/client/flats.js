@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
-// import { ReactiveDict } from 'meteor/reactive-dict'
 
+import C from './consts.js'
 import { Flats } from '../api/flats.js'
 import './flats.scss'
 import './flats.html'
@@ -29,13 +29,13 @@ Template.flats.helpers({
 
 Template.flats.events({
   'click .rate-flat-no'() {
-    Meteor.call('flats.switch-rate', this._id, 0)
+    Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_NO)
   },
   'click .rate-flat-could'() {
-    Meteor.call('flats.switch-rate', this._id, 1)
+    Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_COULD)
   },
   'click .rate-flat-good'() {
-    Meteor.call('flats.switch-rate', this._id, 2)
+    Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_GOOD)
   },
   'click .hide-all-cancelled'() {
     Meteor.call('flats.hide-all-cancelled')
@@ -58,13 +58,13 @@ Template.flatRow.helpers({
     return 'https://maps.google.com/?q='+street.replace(' ', '+')
   },
   isFlatGood(flat) {
-    return flat.rate === 2
+    return flat.rate === C.FLAT_RATE_GOOD
   },
   isFlatCould(flat) {
-    return flat.rate === 1
+    return flat.rate === C.FLAT_RATE_COULD
   },
   isFlatCancelled(flat) {
-    return flat.rate === 0
+    return flat.rate === C.FLAT_RATE_NO
   },
   date(createdAt) {
     return createdAt ? createdAt.getDate() + ' ' + MONTH_NAMES[createdAt.getMonth()-1] : ''

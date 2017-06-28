@@ -22,3 +22,4 @@ reactive-dict
 http
 fourseven:scss
 session
+simply:reactive-local-storage

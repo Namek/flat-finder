@@ -1,5 +1,7 @@
 <body>
-  <div>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{secret "GOOGLE_API_KEY"}}&libraries=places" async defer></script>
+
+  <div class="top-panel">
     <button class="toggle-settings">
       {{#if settingsOpen}}
         Close Settings
@@ -7,6 +9,22 @@
         Open Settings
       {{/if}}
     </button>
+
+    <div class="btns-map">
+      Map:
+
+      <button
+        class="btn-map-toggle-hearts {{#if isShowingHeartedFlatsOnMap}}enabled{{/if}}"
+      ><i class="fa fa-fw fa-heart"></i></button>
+
+      <button
+        class="btn-map-toggle-likes {{#if isShowingLikedFlatsOnMap}}enabled{{/if}}"
+      ><i class="fa fa-fw fa-thumbs-o-up"></i></button>
+
+      <button
+        class="btn-map-toggle-custom-markers {{#if isShowingCustomMarkersOnMap}}enabled{{/if}}"
+      ><i class="fa fa-fw fa-map-marker"></i></button>
+    </div>
   </div>
   {{#if settingsOpen}}
     <h1>Settings</h1>
@@ -19,9 +37,7 @@
     <hr>
     
     <div class="flats-with-map-container {{#if isMapOnRight}}map-on-right{{/if}}">
-      {{#with secret "GOOGLE_API_KEY"}}
-        {{> map key=this}}
-      {{/with}}
+      {{> map}}
 
       <div class="flats-container">
         {{> flats}}

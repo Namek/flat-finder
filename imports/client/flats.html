@@ -56,7 +56,9 @@
     </td>
     <td>
       <button class="btn-rescan-website"><i class="fa fa-fw fa-refresh"></i></button>
-      <button class="btn-show-on-map"><i class="fa fa-fw fa-map"></i></button>
+      {{#if street}}
+        <button class="btn-show-on-map"><i class="fa fa-fw fa-map"></i></button>
+      {{/if}}
     </td>
   </tr>
 </template>

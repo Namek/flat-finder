@@ -2,6 +2,21 @@ body {
   margin: 4px;
 }
 
+.top-panel {
+  display: flex;
+  justify-content: space-between;
+
+  .btns-map {
+    button {
+      &.enabled {
+        i {
+          color: steelblue;
+        }
+      }
+    }
+  }
+}
+
 .flats-with-map-container {
   &.map-on-right {
     display: flex;

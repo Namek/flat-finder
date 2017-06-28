@@ -16,7 +16,17 @@ export default function scrapeSomething(siteUrl, opts) {
     return new Promise((resolve, reject) => {
       try {
         let siteContent = memoizedHttpGet(siteUrl)
-        scrapeSingleOfferSite(siteUrl, siteContent)
+        let newDoc = scrapeSingleOfferSite(siteUrl, siteContent)
+        let doc = Flats.findOne({ url: newDoc.url })
+        if (!doc) {
+          Flats.insert(newDoc)
+        }
+        else {
+          // don't update the date, we wanna keep it the oldest possible
+          delete newDoc.createdAt
+          Flats.update({_id: doc._id}, {$set: newDoc})
+        }
+
         resolve()
       } catch (err) {
         console.error(err)
@@ -110,7 +120,8 @@ function gatherUrlsFromListPage(siteUrl, {shouldRescanSameFlats, furthestDaysBac
 
 function scrapeSingleOfferSite(url, data) {
   $ = new cheerio.load(data)
-  let description = $('div.description').text()
+  let description = $('div.description').first().text()
+  let title = $('.myAdTitle').text()
 
   let createdAtMatch = /([0-9]{2})\/([0-9]{2})\/([0-9]{4})/.exec(data) //example: 08/06/2017
   let createdAt = new Date()
@@ -146,19 +157,37 @@ function scrapeSingleOfferSite(url, data) {
         .replace('img.classistatic.com/crop/75x50/', '')
         .replace('_19.', '_20.'))
 
-  let idx = description.indexOf("ul.")
-  let street = idx < 0 ? null : description.slice(idx, 
-    Math.min(
-      description.indexOf(" ", idx+5),
-      description.indexOf(".", idx+5)))
+  let street = [title, description].reduce((prev, cur, curIdx, arr) => {
+    if (prev) {
+      return prev
+    }
 
-  if (!street) {
-    idx = description.indexOf("ulic")
-    street = idx < 0 ? null : description.slice(idx, 
-      Math.min(
-        description.indexOf(" ", idx+7),
-        description.indexOf(".", idx+7)))
-  }
+    let val = cur + '.' //the dot makes it easier to find street name in the end of line
+    let idx = val.indexOf("ul.")
+
+    let street = idx < 0 ? null : val.slice(idx, 
+    Math.min(
+      val.indexOf(" ", idx+5),
+      val.indexOf(".", idx+5)))
+
+    if (!street) {
+      idx = val.indexOf("ulic")
+      street = idx < 0 ? null : val.slice(idx, 
+        Math.min(
+          val.indexOf(" ", idx+7),
+          val.indexOf(".", idx+7)))
+
+      // replace "ulicy" / "ulica" to "ul."
+      if (street) {
+        idx = street.indexOf(' ')
+        if (idx >= 4) {
+          street = "ul. " + street.substr(idx+1)
+        }
+      }
+    }
+
+    return street
+  }, null)
   
   if (street) {
     street = street
@@ -176,14 +205,22 @@ function scrapeSingleOfferSite(url, data) {
     : null
 
   let locationSourceText = $('#div-gpt-oop > div.containment > div.page.extra > div.breadcrumbs > h1 > span').text()
-    .trim().split('|')
+
+  if (!locationSourceText) {
+    let els = $('div.breadcrumbs span[itemscope] > a > span')
+      .map((i, el) => $(el).text())
+      .toArray()
+    locationSourceText = els[els.length-1]
+  }
+
+  locationSourceText = locationSourceText.trim().split('|')
   let location = locationSourceText[locationSourceText.length-1].trim()
 
   let info = {
     siteType: 'gumtree',
     createdAt,
     url,
-    title: $('.myAdTitle').text(),
+    title,
     price,
     description,
     descriptionShort: description.slice(0, 350),
