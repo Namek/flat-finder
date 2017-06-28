@@ -2,6 +2,8 @@
 
 My version of [modrzew/gumtree-scraper](https://github.com/modrzew/gumtree-scraper) that adds map and is built on top of JavaScript + Meteor instead of Python.
 
+![the app](/screenshot.png)
+
 # How to run it?
 
 You simply run it as a meteor app.
