@@ -10,6 +10,8 @@ You simply run it as a meteor app.
 1. Install [Meteor](https://www.meteor.com/)
 2. open command line, go to app folder and type in `meteor run`
 3. open the URL shown on the console output (usually [http://localhost:3000](http://localhost:3000))
+4. open second command line, go to app folder and run `meteor mongo`
+5. using mongodb, insert a website to be scanned: `db.websites.insert({"type" : "gumtree", "url" : "https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/rzeszow/v1c9008l3200252p1"})`
 
 # Lessons learned
 
