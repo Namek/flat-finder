@@ -11,7 +11,7 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  'flats.switch-rate': function (flatId, rate) {
+  'flats.switch-rate': function switchRate (flatId, rate) {
     check(flatId, String);
     check(rate, Number);
 
@@ -22,7 +22,7 @@ Meteor.methods({
     }
   },
 
-  'flats.hide-all-cancelled': function () {
+  'flats.hide-all-cancelled': function hideAllCancelled () {
     Flats.update({ rate: { $eq: 0 } }, { $set: { hidden: true } }, { multi: true });
   },
 });

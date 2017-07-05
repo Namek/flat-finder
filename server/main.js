@@ -1,99 +1,97 @@
-import { Meteor } from 'meteor/meteor'
-const cheerio = require('cheerio')
+/* eslint-disable no-console */
+import { Meteor } from 'meteor/meteor';
 
-import { Websites, Flats, Memo } from '../imports/api/index.js'
+import { Websites } from '../imports/api/index.js';
 
-const CRAWL_DELAY = 600 //seconds
+const CRAWL_DELAY = 600; // seconds
 
-const SHOULD_RESCAN_SAME_FLATS = false
-const FURTHEST_DAYS_BACK_COUNT = 30
+const SHOULD_RESCAN_SAME_FLATS = false;
+const FURTHEST_DAYS_BACK_COUNT = 30;
 
-Meteor.startup(() => {
-  function next() {
-    Meteor.setTimeout(crawlEverything, CRAWL_DELAY*1000)
-  }
 
-  crawlEverything()
-    .then(() => {
-      next()
-    }, err => {
-      console.error(err)
-      next()
-    })
-});
+function determineWebsiteType (url) {
+  if (url.indexOf('gumtree') > 0) { return 'gumtree'; }
 
-Meteor.methods({
-  /**
-   * Scrape an offer website. It may be a rescan or a new scan.
-   * @param {String} url 
-   */
-  'crawler.scrape-website'(url) {
-    console.log(url)
-    let siteType = determineWebsiteType(url)
-
-    if (!siteType)
-      return new Error("Unkown site type for URL: " + url)
-
-    let scrapeFn = getOfferScrapeFunction(siteType)
-    callScrapeFunctionWithParams(scrapeFn, url)
-  }
-})
-
-function determineWebsiteType(url) {
-  if (url.indexOf("gumtree") > 0)
-    return 'gumtree'
-
-  return null
+  return null;
 }
 
-function getOfferScrapeFunction(siteType) {
-  let scrapeFn = null
-  if (siteType == 'gumtree') {
-    import scrape from './crawlers/gumtree.js'
-    scrapeFn = scrape
+function getOfferScrapeFunction (siteType) {
+  let scrapeFn = null;
+  if (siteType === 'gumtree') {
+    scrapeFn = require('./crawlers/gumtree.js').default;  // eslint-disable-line global-require
   }
 
-  return scrapeFn
+  return scrapeFn;
 }
 
-function callScrapeFunctionWithParams(scrapeFn, siteUrl) {
+function callScrapeFunctionWithParams (scrapeFn, siteUrl) {
   return scrapeFn(siteUrl, {
     shouldRescanSameFlats: SHOULD_RESCAN_SAME_FLATS,
-    furthestDaysBackCount: FURTHEST_DAYS_BACK_COUNT
-  })
+    furthestDaysBackCount: FURTHEST_DAYS_BACK_COUNT,
+  });
 }
 
-String.prototype.trimChars = function(chars) {
-  var l = 0;
-  var r = this.length-1;
-  while(chars.indexOf(this[l]) >= 0 && l < r) l++;
-  while(chars.indexOf(this[r]) >= 0 && r >= l) r--;
-  return this.substring(l, r+1);
-};
-
-function crawlEverything() {
+function crawlEverything () {
   return Promise.all(
     Websites.find({}).fetch().map(site =>
       new Promise((resolve, reject) => {
         try {
-          let scrapeFn = getOfferScrapeFunction(site.type)
-          
+          const scrapeFn = getOfferScrapeFunction(site.type);
+
           if (!scrapeFn) {
-            throw new Error(`Unknown site type: ${site.type}.`)
+            throw new Error(`Unknown site type: ${site.type}.`);
           }
 
           callScrapeFunctionWithParams(scrapeFn, site.url)
             .then(
               () => resolve(),
-              err => { console.error(err), resolve() }
-            )
+              (err) => {
+                console.error(err);
+                resolve();
+              },
+            );
+        } catch (err) {
+          console.error(err);
+          reject(err);
         }
-        catch (err) {
-          console.error(err)
-          reject(err)
-        }
-      })
-    )
-  )
+      }),
+    ),
+  );
 }
 
+
+Meteor.startup(() => {
+  function next () {
+    Meteor.setTimeout(crawlEverything, CRAWL_DELAY * 1000);
+  }
+
+  crawlEverything()
+    .then(() => {
+      next();
+    }, (err) => {
+      console.error(err);
+      next();
+    });
+});
+
+Meteor.methods({
+  /**
+   * Scrape an offer website. It may be a rescan or a new scan.
+   * @param {String} url
+   */
+  'crawler.scrape-website': function scrapeWebsite (url) {
+    check(url, Match.String);
+    console.log(url);
+    const siteType = determineWebsiteType(url);
+
+    if (!siteType) {
+      throw new Error(`Unkown site type for URL: ${url}`);
+    }
+
+    const scrapeFn = getOfferScrapeFunction(siteType);
+    if (!scrapeFn) {
+      throw new Error(`Unkown site type: ${siteType}`);
+    }
+    callScrapeFunctionWithParams(scrapeFn, url);
+  },
+});

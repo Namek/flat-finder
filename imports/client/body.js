@@ -1,6 +1,6 @@
 import { Template } from 'meteor/templating';
-import { ReactiveVar } from 'meteor/reactive-var';
-import { Session } from 'meteor/session';
+// import { ReactiveVar } from 'meteor/reactive-var';
+// import { Session } from 'meteor/session';
 import * as RLocalStorage from 'meteor/simply:reactive-local-storage';
 
 import C from './consts.js';
@@ -12,58 +12,58 @@ import './map.js';
 
 import config from '../config.json';
 
-Template.body.onCreated(function () {
+Template.body.onCreated(() => {
   this.state = new ReactiveDict();
 });
 
 Template.body.helpers({
-  secret(key) {
+  secret (key) {
     const val = config[key];
     if (!val) { throw new Error(`Undefined config value for key: ${key}`); }
 
     return val;
   },
-  settingsOpen() {
+  settingsOpen () {
     const instance = Template.instance();
     return instance.state.get('settingsOpen');
   },
-  isMapOnRight() {
+  isMapOnRight () {
     return RLocalStorage.getItem(C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY);
   },
-  isShowingHeartedFlatsOnMap() {
+  isShowingHeartedFlatsOnMap () {
     return RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY);
   },
-  isShowingLikedFlatsOnMap() {
+  isShowingLikedFlatsOnMap () {
     return RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_LIKES_KEY);
   },
-  isShowingCustomMarkersOnMap() {
+  isShowingCustomMarkersOnMap () {
     return RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY);
   },
 });
 
 Template.body.events({
-  'click .toggle-settings': function (evt, instance) {
-    instance.state.set('settingsOpen', !instance.state.get('settingsOpen'));
+  'click .toggle-settings': function toggleSettings (event, templateInstance) {
+    templateInstance.state.set('settingsOpen', !templateInstance.state.get('settingsOpen'));
   },
-  'change .checkbox-map-on-right': function (evt, instance) {
+  'change .checkbox-map-on-right': function setMapOnRight () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY),
     );
   },
-  'click .btn-map-toggle-hearts': function () {
+  'click .btn-map-toggle-hearts': function toggleHearts () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY),
     );
   },
-  'click .btn-map-toggle-likes': function () {
+  'click .btn-map-toggle-likes': function toggleLikes () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_TOGGLE_LIKES_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_LIKES_KEY),
     );
   },
-  'click .btn-map-toggle-custom-markers': function () {
+  'click .btn-map-toggle-custom-markers': function toggleCustomMarkers () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY),

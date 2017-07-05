@@ -1,4 +1,4 @@
-export default C = {
+export default {
   LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY: '_settings_isMapOnRight',
   LOCAL_STORAGE_TOGGLE_HEARTS_KEY: '_settings_isShowingHeartedFlatsOnMap',
   LOCAL_STORAGE_TOGGLE_LIKES_KEY: '_settings_isShowingLikedFlatsOnMap',

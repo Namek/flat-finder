@@ -1,99 +1,26 @@
-const cheerio = require('cheerio');
+/* eslint-disable no-console */
+import cheerio from 'cheerio';
 
 import { memoizedHttpGet } from '../utils.js';
 import { Flats } from '../../imports/api/index.js';
 
-/**
- * Autotomatically scrape an offer list or a single offer.
- * @param {String} siteUrl
- * @param {Object} opts
- */
-export default function scrapeSomething(siteUrl, opts) {
-  const parts = siteUrl.split('/');
-  const lastPart = parts[parts.length - 1];
-  const isOfferSite = !Number.isNaN(parseInt(lastPart));
 
-  if (isOfferSite) {
-    return new Promise((resolve, reject) => {
-      try {
-        const siteContent = memoizedHttpGet(siteUrl);
-        const newDoc = scrapeSingleOfferSite(siteUrl, siteContent);
-        const doc = Flats.findOne({ url: newDoc.url });
-        if (!doc) {
-          Flats.insert(newDoc);
-        } else {
-          // don't update the date, we wanna keep it the oldest possible
-          delete newDoc.createdAt;
-          Flats.update({ _id: doc._id }, { $set: newDoc });
-        }
-
-        resolve();
-      } catch (err) {
-        console.error(err);
-        reject(err);
-      }
-    });
+function trimChars (chars) {
+  let l = 0;
+  let r = this.length - 1;
+  while (chars.indexOf(this[l]) >= 0 && l < r) {
+    l += 1;
   }
-
-  return scrapeOfferListSite(siteUrl, opts);
+  while (chars.indexOf(this[r]) >= 0 && r >= l) {
+    r -= 1;
+  }
+  return chars.substring(l, r + 1);
 }
 
 
-function scrapeOfferListSite(siteUrl, opts) {
-  const { shouldRescanSameFlats, furthestDaysBackCount } = opts;
-
-  return new Promise((resolve, reject) => {
-    const urls = gatherUrlsFromListPage(siteUrl, opts);
-
-    if (shouldRescanSameFlats) {
-      const scannedUrls = Flats.find({ siteType: 'gumtree' })
-        .map(flat => flat.url);
-
-      for (const url of scannedUrls) {
-        if (urls.indexOf(url) < 0) {
-          urls.push(url);
-        }
-      }
-    }
-
-    console.log(`Scanning ${urls.length} sites...`);
-    const sites = urls.map((url) => {
-      console.log(`Open: ${url}`);
-
-      const ret = { url, data: null };
-      try {
-        ret.data = memoizedHttpGet(url);
-      } catch (err) {
-        console.error(`URL failed: ${url}`, err);
-      }
-
-      return ret;
-    });
-
-    const contents = sites
-      .filter(({ data }) => data !== null);
-
-    const urlsToRetry = sites
-      .filter(({ data }) => data === null)
-      .map(({ url }) => url);
-
-    const scrappedData = contents
-      .map(({ url, data }) => scrapeSingleOfferSite(url, data));
-
-    for (const newDoc of scrappedData) {
-      const doc = Flats.findOne({ url: newDoc.url });
-      if (!doc) {
-        Flats.insert(newDoc);
-      } else {
-        Flats.update({ _id: doc._id }, { $set: newDoc });
-      }
-    }
-  });
-}
-
-function gatherUrlsFromListPage(siteUrl, { shouldRescanSameFlats, furthestDaysBackCount }) {
-  console.log(`Scraping: ${siteUrl}`);
-  const $ = new cheerio.load(Meteor.http.get(siteUrl).content);
+function gatherUrlsFromListPage (siteUrl, { shouldRescanSameFlats }) {
+  console.log(`Scraping: ${siteUrl}`);  // eslint-disable-line no-console
+  const $ = new cheerio.load(Meteor.http.get(siteUrl).content);  // eslint-disable-line new-cap
   const offersEls = $('.result');
 
   const urls = [];
@@ -115,8 +42,9 @@ function gatherUrlsFromListPage(siteUrl, { shouldRescanSameFlats, furthestDaysBa
   return urls;
 }
 
-function scrapeSingleOfferSite(url, data) {
-  $ = new cheerio.load(data);
+
+function scrapeSingleOfferSite (offerUrl, data) {
+  const $ = new cheerio.load(data);  // eslint-disable-line new-cap
   const description = $('div.description').first().text();
   const title = $('.myAdTitle').text();
 
@@ -131,8 +59,8 @@ function scrapeSingleOfferSite(url, data) {
   let galleryData = $('#vip-gallery-data');
   galleryData = galleryData.html();
   if (galleryData) {
-    imageUrls = JSON.parse(galleryData.trim()).small
-      .trimChars('[]')
+    imageUrls = JSON.parse(galleryData.trim()).small;
+    imageUrls = trimChars(imageUrls)
       .split(',')
       .map(s => s
         .trim()
@@ -153,7 +81,7 @@ function scrapeSingleOfferSite(url, data) {
         .replace('img.classistatic.com/crop/75x50/', '')
         .replace('_19.', '_20.'));
 
-  let street = [title, description].reduce((prev, cur, curIdx, arr) => {
+  let foundStreet = [title, description].reduce((prev, cur) => {
     if (prev) {
       return prev;
     }
@@ -162,9 +90,9 @@ function scrapeSingleOfferSite(url, data) {
     let idx = val.indexOf('ul.');
 
     let street = idx < 0 ? null : val.slice(idx,
-    Math.min(
-      val.indexOf(' ', idx + 5),
-      val.indexOf('.', idx + 5)));
+      Math.min(
+        val.indexOf(' ', idx + 5),
+        val.indexOf('.', idx + 5)));
 
     if (!street) {
       idx = val.indexOf('ulic');
@@ -185,12 +113,12 @@ function scrapeSingleOfferSite(url, data) {
     return street;
   }, null);
 
-  if (street) {
-    street = street
+  if (foundStreet) {
+    foundStreet = foundStreet
       .replace('\n', '').replace('\r', '')
       .replace('iej', 'a')
-      .replace('ej', 'a')
-      .trimChars(' ,.')
+      .replace('ej', 'a');
+    foundStreet = trimChars(foundStreet)
       .replace('Biuro', '');
   }
 
@@ -215,7 +143,7 @@ function scrapeSingleOfferSite(url, data) {
   const info = {
     siteType: 'gumtree',
     createdAt,
-    url,
+    offerUrl,
     title,
     price,
     description,
@@ -223,9 +151,98 @@ function scrapeSingleOfferSite(url, data) {
     detailsHtml: $('.vip-details').toString(),
     imageUrls,
     fullImageUrls,
-    street,
+    foundStreet,
     location,
   };
 
   return info;
+}
+
+
+function scrapeOfferListSite (siteUrl, opts) {
+  const { shouldRescanSameFlats } = opts;
+
+  return new Promise(() => {
+    const urls = gatherUrlsFromListPage(siteUrl, opts);
+
+    if (shouldRescanSameFlats) {
+      const scannedUrls = Flats.find({ siteType: 'gumtree' })
+        .map(flat => flat.url);
+
+      scannedUrls.forEach((url) => {
+        if (urls.indexOf(url) < 0) {
+          urls.push(url);
+        }
+      });
+    }
+
+    console.log(`Scanning ${urls.length} sites...`);
+    const sites = urls.map((url) => {
+      console.log(`Open: ${url}`);
+
+      const ret = { url, data: null };
+      try {
+        ret.data = memoizedHttpGet(url);
+      } catch (err) {
+        console.error(`URL failed: ${url}`, err);
+      }
+
+      return ret;
+    });
+
+    const contents = sites
+      .filter(({ data }) => data !== null);
+
+    sites
+      .filter(({ data }) => data === null)
+      .map(({ url }) => url);
+
+    const scrappedData = contents
+      .map(({ url, data }) => scrapeSingleOfferSite(url, data));
+
+    scrappedData.forEach((newDoc) => {
+      const doc = Flats.findOne({ url: newDoc.url });
+      if (!doc) {
+        Flats.insert(newDoc);
+      } else {
+        Flats.update({ _id: doc._id }, { $set: newDoc });
+      }
+    });
+  });
+}
+
+
+/**
+ * Autotomatically scrape an offer list or a single offer.
+ * @param {String} siteUrl
+ * @param {Object} opts
+ */
+export default function scrapeSomething (siteUrl, opts) {
+  const parts = siteUrl.split('/');
+  const lastPart = parts[parts.length - 1];
+  const isOfferSite = !Number.isNaN(parseInt(lastPart, 10));
+
+  if (isOfferSite) {
+    return new Promise((resolve, reject) => {
+      try {
+        const siteContent = memoizedHttpGet(siteUrl);
+        const newDoc = scrapeSingleOfferSite(siteUrl, siteContent);
+        const doc = Flats.findOne({ url: newDoc.url });
+        if (!doc) {
+          Flats.insert(newDoc);
+        } else {
+          // don't update the date, we wanna keep it the oldest possible
+          delete newDoc.createdAt;
+          Flats.update({ _id: doc._id }, { $set: newDoc });
+        }
+
+        resolve();
+      } catch (err) {
+        console.error(err);
+        reject(err);
+      }
+    });
+  }
+
+  return scrapeOfferListSite(siteUrl, opts);
 }

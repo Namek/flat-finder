@@ -9,7 +9,7 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  'websites.add': function (url, type) {
+  'websites.add': function add (url, type) {
     check(url, String);
     check(type, String);
 

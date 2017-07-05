@@ -15,10 +15,7 @@ Template.flats.onCreated(() => {
 });
 
 Template.flats.helpers({
-  flats() {
-    const instance = Template.instance();
-    // if (instance.state.get(''))
-
+  flats () {
     return Flats.find({
       hidden: { $ne: true },
     }, {
@@ -28,45 +25,44 @@ Template.flats.helpers({
 });
 
 Template.flats.events({
-  'click .rate-flat-no': function () {
+  'click .rate-flat-no': function switchRateToNo () {
     Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_NO);
   },
-  'click .rate-flat-could': function () {
+  'click .rate-flat-could': function switchRateToCould () {
     Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_COULD);
   },
-  'click .rate-flat-good': function () {
+  'click .rate-flat-good': function switchRateToGood () {
     Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_GOOD);
   },
-  'click .hide-all-cancelled': function () {
+  'click .hide-all-cancelled': function hideAllCancelled () {
     Meteor.call('flats.hide-all-cancelled');
   },
-  'click .btn-rescan-website': function () {
-    console.log(this.url);
+  'click .btn-rescan-website': function rescanWebsite () {
     Meteor.call('crawler.scrape-website', this.url);
   },
-  'click .btn-show-on-map': function () {
+  'click .btn-show-on-map': function showOnMap () {
     AppServices.Map.textSearch(`${this.location}, ${this.street}`);
     AppServices.Map.scrollToMap();
   },
 });
 
 Template.flatRow.helpers({
-  imageUrl(urls) {
+  imageUrl (urls) {
     return urls ? urls[0] : '';
   },
-  mapUrl(street) {
+  mapUrl (street) {
     return `https://maps.google.com/?q=${street.replace(' ', '+')}`;
   },
-  isFlatGood(flat) {
+  isFlatGood (flat) {
     return flat.rate === C.FLAT_RATE_GOOD;
   },
-  isFlatCould(flat) {
+  isFlatCould (flat) {
     return flat.rate === C.FLAT_RATE_COULD;
   },
-  isFlatCancelled(flat) {
+  isFlatCancelled (flat) {
     return flat.rate === C.FLAT_RATE_NO;
   },
-  date(createdAt) {
+  date (createdAt) {
     return createdAt ? `${createdAt.getDate()} ${MONTH_NAMES[createdAt.getMonth() - 1]}` : '';
   },
 });

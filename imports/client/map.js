@@ -1,6 +1,5 @@
 import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
-import { ReactiveVar } from 'meteor/reactive-var';
 import * as RLocalStorage from 'meteor/simply:reactive-local-storage';
 
 import C from './consts.js';
@@ -22,17 +21,7 @@ import './map.scss';
 const flatToMarkerInfo = {};
 
 
-Template.map.onRendered(() => {
-  const clockId = Meteor.setInterval(() => {
-    if (window.google) {
-      Meteor.clearInterval(clockId);
-      initMap();
-    }
-  }, 200);
-});
-
-
-function memoizedGeocode(geocoder, address) {
+function memoizedGeocode (geocoder, address) {
   return new Promise((resolve, reject) => {
     if (!address) {
       reject({ status: 'NO_SEARCH_TEXT' });
@@ -58,7 +47,9 @@ function memoizedGeocode(geocoder, address) {
   });
 }
 
-function initMap() {
+
+function initMap () {
+  const google = window.google;
   const mapEl = document.getElementById('map');
   const map = new google.maps.Map(mapEl, {
     center: { lat: -34.397, lng: 150.644 },
@@ -82,7 +73,7 @@ function initMap() {
   }
 
   AppServices.registerService('Map', {
-    textSearch(text) {
+    textSearch (text) {
       memoizedGeocode(geocoder, text)
         .then((results) => {
           const pos = results[0].geometry.location;
@@ -97,13 +88,13 @@ function initMap() {
           infoWindow.open(map);
           map.setCenter(pos);
         }, (err) => {
-          console.error(err);
+          console.error(err);  // eslint-disable-line no-console
         });
     },
-    scrollToMap() {
+    scrollToMap () {
       mapEl.scrollIntoView(true);
     },
-    addFlatMarker(flatId, text) {
+    addFlatMarker (flatId, text) {
       return memoizedGeocode(geocoder, text)
         .then((results) => {
           const position = results[0].geometry.location;
@@ -121,7 +112,7 @@ function initMap() {
           };
         });
     },
-    removeFlatMarker(flatId) {
+    removeFlatMarker (flatId) {
       const info = flatToMarkerInfo[flatId];
       if (!info) {
         return;
@@ -158,28 +149,28 @@ function initMap() {
     }).fetch();
 
     // let's remove some old markers
-    for (const flatId in flatToMarkerInfo) {
-      const flat = flats.find(f => f._id == flatId);
+    Object.keys(flatToMarkerInfo).forEach((flatId) => {
+      const flat = flats.find(f => f._id === flatId);
 
       if (!flat) {
         AppServices.Map.removeFlatMarker(flatId);
       }
-    }
+    });
 
     // now let's add some new markers
     let promise = Promise.resolve();
 
-    for (const flat of flats) {
+    flats.forEach((flat) => {
       if (flatToMarkerInfo[flat._id]) {
         // it already exists on map!
-        continue;
+        return;
       }
 
       if (!flat.street) {
-        continue;
+        return;
       }
 
-      function invoke() {
+      function invoke () {
         return AppServices.Map.addFlatMarker(flat._id, `${flat.location}, ${flat.street}`);
       }
 
@@ -187,8 +178,18 @@ function initMap() {
         () => invoke(),
         () => Meteor.setTimeout(() => invoke(), 1000),
       );
-    }
+    });
 
     promise.then(() => { }, () => { });
   });
 }
+
+
+Template.map.onRendered(() => {
+  const clockId = Meteor.setInterval(() => {
+    if (window.google) {
+      Meteor.clearInterval(clockId);
+      initMap();
+    }
+  }, 200);
+});

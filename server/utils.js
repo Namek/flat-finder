@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Memo } from '../imports/api/index.js';
 
-function memoizedHttpGet(url) {
+function memoizedHttpGet (url) {
   const memoized = Memo.findOne({ key: url });
   if (memoized) {
     return memoized.value;

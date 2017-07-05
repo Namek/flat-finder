@@ -8,6 +8,10 @@ module.exports = {
   },
   rules: {
     'import/prefer-default-export': 'off',
+    'space-before-function-paren': ['error', 'always'],
+    'no-underscore-dangle': 'off',
+    'no-script-url': 'off',
+    'semi': ['error', 'always'],
 
     // ESLint doesn't like Meteor imports not being in package.json - let's turn it off
     // See: https://github.com/clayne11/eslint-import-resolver-meteor/issues/11#issuecomment-238267628
@@ -17,5 +21,8 @@ module.exports = {
   },
   settings: {
     'import/resolver': ['meteor'],
+  },
+  globals: {
+    'AppServices': true,
   },
 };
