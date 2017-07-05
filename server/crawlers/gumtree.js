@@ -27,7 +27,9 @@ function gatherUrlsFromListPage (siteUrl, { shouldRescanSameFlats }) {
   offersEls.each((i, el) => {
     const anchor = $(el).find('a');
 
-    if (!anchor) { return; }
+    if (!anchor) {
+      return;
+    }
 
     const url = `https://gumtree.pl${anchor.attr('href')}`;
 

@@ -10,7 +10,9 @@ const FURTHEST_DAYS_BACK_COUNT = 30;
 
 
 function determineWebsiteType (url) {
-  if (url.indexOf('gumtree') > 0) { return 'gumtree'; }
+  if (url.indexOf('gumtree') > 0) {
+    return 'gumtree';
+  }
 
   return null;
 }

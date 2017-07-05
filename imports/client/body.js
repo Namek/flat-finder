@@ -19,7 +19,9 @@ Template.body.onCreated(() => {
 Template.body.helpers({
   secret (key) {
     const val = config[key];
-    if (!val) { throw new Error(`Undefined config value for key: ${key}`); }
+    if (!val) {
+      throw new Error(`Undefined config value for key: ${key}`);
+    }
 
     return val;
   },
