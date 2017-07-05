@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { Meteor } from 'meteor/meteor';
+import { check } from 'meteor/check';
 
 import { Websites } from '../imports/api/index.js';
 
@@ -82,7 +83,7 @@ Meteor.methods({
    * @param {String} url
    */
   'crawler.scrape-website': function scrapeWebsite (url) {
-    check(url, Match.String);
+    check(url, String);
     console.log(url);
     const siteType = determineWebsiteType(url);
 
