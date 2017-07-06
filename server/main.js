@@ -11,20 +11,24 @@ const FURTHEST_DAYS_BACK_COUNT = 30;
 
 
 function determineWebsiteType (url) {
-  if (url.indexOf('gumtree') > 0) {
+  if (url.indexOf('gumtree.pl') > 0) {
     return 'gumtree';
   }
-
+  if (url.indexOf('gumtree.com.au') > 0) {
+    return 'gumtree-au';
+  }
   return null;
 }
 
 function getOfferScrapeFunction (siteType) {
-  let scrapeFn = null;
-  if (siteType === 'gumtree') {
-    scrapeFn = require('./crawlers/gumtree.js').default;  // eslint-disable-line global-require
+  switch (siteType) {
+    case 'gumtree':
+      return require('./crawlers/gumtree.js').default;
+    case 'gumtree-au':
+      return require('./crawlers/gumtree-au.js').default;
+    default:
+      return null;
   }
-
-  return scrapeFn;
 }
 
 function callScrapeFunctionWithParams (scrapeFn, siteUrl) {
