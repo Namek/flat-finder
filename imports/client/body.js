@@ -44,28 +44,28 @@ Template.body.helpers({
 });
 
 Template.body.events({
-  'click .toggle-settings': function toggleSettings (event, templateInstance) {
+  'click .toggle-settings' (event, templateInstance) {
     templateInstance.state.set('settingsOpen', !templateInstance.state.get('settingsOpen'));
   },
-  'change .checkbox-map-on-right': function setMapOnRight () {
+  'change .checkbox-map-on-right' () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_IS_MAP_ON_RIGHT_KEY),
     );
   },
-  'click .btn-map-toggle-hearts': function toggleHearts () {
+  'click .btn-map-toggle-hearts' () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_HEARTS_KEY),
     );
   },
-  'click .btn-map-toggle-likes': function toggleLikes () {
+  'click .btn-map-toggle-likes' () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_TOGGLE_LIKES_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_LIKES_KEY),
     );
   },
-  'click .btn-map-toggle-custom-markers': function toggleCustomMarkers () {
+  'click .btn-map-toggle-custom-markers' () {
     RLocalStorage.setItem(
       C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY,
       !RLocalStorage.getItem(C.LOCAL_STORAGE_TOGGLE_CUSTOM_MARKERS_KEY),

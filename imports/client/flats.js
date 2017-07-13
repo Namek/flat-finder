@@ -25,22 +25,22 @@ Template.flats.helpers({
 });
 
 Template.flats.events({
-  'click .rate-flat-no': function switchRateToNo () {
+  'click .rate-flat-no' () {
     Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_NO);
   },
-  'click .rate-flat-could': function switchRateToCould () {
+  'click .rate-flat-could' () {
     Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_COULD);
   },
-  'click .rate-flat-good': function switchRateToGood () {
+  'click .rate-flat-good' () {
     Meteor.call('flats.switch-rate', this._id, C.FLAT_RATE_GOOD);
   },
-  'click .hide-all-cancelled': function hideAllCancelled () {
+  'click .hide-all-cancelled' () {
     Meteor.call('flats.hide-all-cancelled');
   },
-  'click .btn-rescan-website': function rescanWebsite () {
+  'click .btn-rescan-website' () {
     Meteor.call('crawler.scrape-website', this.url);
   },
-  'click .btn-show-on-map': function showOnMap () {
+  'click .btn-show-on-map' () {
     AppServices.Map.textSearch(`${this.location}, ${this.street}`);
     AppServices.Map.scrollToMap();
   },

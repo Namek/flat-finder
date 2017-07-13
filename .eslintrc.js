@@ -13,6 +13,7 @@ module.exports = {
     'no-script-url': 'off',
     'semi': ['error', 'always'],
     'brace-style': ['error', '1tbs'],
+    'object-shorthand': 'off',
 
     // ESLint doesn't like Meteor imports not being in package.json - let's turn it off
     // See: https://github.com/clayne11/eslint-import-resolver-meteor/issues/11#issuecomment-238267628
