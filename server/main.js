@@ -23,9 +23,9 @@ function determineWebsiteType (url) {
 function getOfferScrapeFunction (siteType) {
   switch (siteType) {
     case 'gumtree':
-      return require('./crawlers/gumtree.js').default;
+      return require('./crawlers/gumtree.js').default;  // eslint-disable-line global-require
     case 'gumtree-au':
-      return require('./crawlers/gumtree-au.js').default;
+      return require('./crawlers/gumtree-au.js').default;  // eslint-disable-line global-require
     default:
       return null;
   }
