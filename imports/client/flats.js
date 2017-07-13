@@ -9,7 +9,7 @@ import './flats.html';
 const MONTH_NAMES = ['Sty', 'Lut', 'Mar', 'Kwi', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paz', 'Lis', 'Gru'];
 
 
-Template.flats.onCreated(() => {
+Template.flats.onCreated(function () {  // eslint-disable-line func-names,prefer-arrow-callback
   // this.state = new ReactiveDict()
   Meteor.subscribe('flats');
 });

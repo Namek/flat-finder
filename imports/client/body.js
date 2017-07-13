@@ -12,7 +12,7 @@ import './map.js';
 
 import config from '../config.json';
 
-Template.body.onCreated(() => {
+Template.body.onCreated(function () { // eslint-disable-line func-names
   this.state = new ReactiveDict();
 });
 
