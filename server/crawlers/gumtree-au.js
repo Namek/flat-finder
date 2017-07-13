@@ -125,12 +125,20 @@ function scrapeSingleOfferSite(url, data) {
   const title = $('#ad-title').text()
 
   const createdAtText = $('.ad-details__ad-attribute-name:contains("Date Listed:")').next().text().trim();
-  const createdAt = moment(createdAtText, 'DD/MM/YYYY');
+  const createdAt = moment(createdAtText, 'DD/MM/YYYY').toDate();
 
-  const images = $('.gallery-thumb-item img');
-  const imageUrls = images.map((i, elem) => elem.attr('src'));
-  const fullImages = $('.gallery__main-viewer-item img');
-  const fullImageUrls = images.map((i, elem) => elem.attr('src'));
+  const imageUrls = $('.gallery-thumb-item span.gallery-thumb-wrap').map((i, elem) => {
+    const raw = $(elem).data('responsive-image');
+    try {
+      // Forgive me for using eval
+      eval(`const parsed = ${raw};`);
+      return parsed['large'];
+    } catch (e) {
+      console.error('Failed to parse info about image');
+      console.log(raw);
+    }
+    return null;
+  }).get().filter(url => url !== null);
 
   const street = $('.ad-heading__ad-map-link').data('address');
   const location = 'Sydney';
@@ -148,7 +156,6 @@ function scrapeSingleOfferSite(url, data) {
     descriptionShort: description.slice(0, 350),
     detailsHtml: $('#ad-description-details').toString(),
     imageUrls,
-    fullImageUrls,
     street,
     location
   }
