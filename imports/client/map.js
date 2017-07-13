@@ -99,18 +99,21 @@ function initMap () {
         .then((results) => {
           const position = results[0].geometry.location;
           infoWindow.close();
-
-          const marker = new google.maps.Marker({
-            map,
-            position,
-            title: text,
-          });
-
-          flatToMarkerInfo[flatId] = {
-            flatId,
-            marker,
-          };
+          Flats.update(flatId, { $set: { position: position.toJSON() }});
+          this.displayMarker(flatId, position, text);
         });
+    },
+    displayMarker(flatId, position, text) {
+      const marker = new google.maps.Marker({
+        map,
+        position,
+        title: text
+      });
+
+      flatToMarkerInfo[flatId] = {
+        flatId,
+        marker
+      };
     },
     removeFlatMarker (flatId) {
       const info = flatToMarkerInfo[flatId];
@@ -170,19 +173,17 @@ function initMap () {
         return;
       }
 
-      function invoke () {
-        return AppServices.Map.addFlatMarker(flat._id, `${flat.location}, ${flat.street}`);
+      function invoke (flat) {
+        const label = `${flat.location}, ${flat.street}`;
+        if (!flat.position) {
+          return AppServices.Map.addFlatMarker(flat._id, label);
+        }
+        AppServices.Map.displayMarker(flat._id, flat.position, label);
       }
-
-      promise = promise.then(
-        () => invoke(),
-        () => Meteor.setTimeout(() => invoke(), 1000),
-      );
     });
 
     promise.then(() => { }, () => { });
   });
-}
 
 
 Template.map.onRendered(() => {
